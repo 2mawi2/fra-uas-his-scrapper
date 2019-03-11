@@ -1,46 +1,10 @@
 package com.scrapper.his_scrapper
 
-import android.content.ContextWrapper
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
-import dagger.Binds
-import dagger.Component
-import dagger.Module
-import dagger.Provides
 import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
-
-interface IPreferencesRepo {
-    fun isUserLoggedIn(): Boolean
-}
-
-class PreferencesRepo @Inject constructor() : IPreferencesRepo {
-    override fun isUserLoggedIn(): Boolean {
-        return true
-    }
-}
-
-@Module
-class MainModule(private val context: ContextWrapper) {
-
-    @Provides
-    fun provideContext(): ContextWrapper {
-        return context
-    }
-
-    @Provides
-    fun providePreferencesRepo(): IPreferencesRepo {
-        return PreferencesRepo()
-    }
-}
-
-@Component(modules = [MainModule::class])
-interface MainComponent {
-    fun context(): ContextWrapper
-
-    fun inject(app: MainActivity)
-}
 
 class MainActivity : AppCompatActivity() {
 
@@ -49,12 +13,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setupDI()
 
-        DaggerMainComponent.builder().mainModule(MainModule(this)).build()
+        if(preferencesRepo.isUserLoggedIn()){
+            setContentView(R.layout.activity_main)
+        }else{
+            //load login activity
+        }
 
-        val isUserLoggedIn = preferencesRepo.isUserLoggedIn()
-        var textView = findViewById<TextView>(text.id)
-        textView.text = isUserLoggedIn.toString()
+    }
+
+    private fun setupDI() {
+        DaggerMainComponent.builder().mainModule(MainModule(this)).build().inject(this)
     }
 }
