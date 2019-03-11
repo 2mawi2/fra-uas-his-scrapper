@@ -18,6 +18,11 @@ class MainModule(private val context: Context) {
     fun providePreferencesRepo(): IPreferencesRepo {
         return PreferencesRepo(context)
     }
+
+    @Provides
+    fun providesHisService(): IHisService {
+        return HisService()
+    }
 }
 
 @Component(modules = [MainModule::class])
@@ -25,4 +30,6 @@ interface MainComponent {
     fun context(): Context
 
     fun inject(app: MainActivity)
+
+    fun inject(app: LoginActivity)
 }

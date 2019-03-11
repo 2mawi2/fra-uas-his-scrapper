@@ -1,10 +1,10 @@
 package com.scrapper.his_scrapper
 
+import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.TextView
-import kotlinx.android.synthetic.main.activity_main.*
 import javax.inject.Inject
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,12 +15,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setupDI()
 
-        if(preferencesRepo.isUserLoggedIn()){
+        if (preferencesRepo.isUserLoggedIn()) {
             setContentView(R.layout.activity_main)
-        }else{
-            //load login activity
+        } else {
+            startActivity(Intent(this, LoginActivity::class.java))
         }
-
     }
 
     private fun setupDI() {
