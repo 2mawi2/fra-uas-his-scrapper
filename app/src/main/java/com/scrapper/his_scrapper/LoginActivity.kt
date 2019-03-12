@@ -2,30 +2,18 @@ package com.scrapper.his_scrapper
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.content.pm.PackageManager
-import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
-import android.app.LoaderManager.LoaderCallbacks
-import android.content.CursorLoader
-import android.content.Loader
-import android.database.Cursor
-import android.net.Uri
-import android.os.AsyncTask
-import android.os.Build
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.text.TextUtils
 import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.widget.ArrayAdapter
-import android.widget.TextView
 
-import java.util.ArrayList
-import android.Manifest.permission.READ_CONTACTS
-import android.webkit.URLUtil
 import android.widget.Toast
 
 import kotlinx.android.synthetic.main.activity_login.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -52,13 +40,9 @@ class LoginActivity : AppCompatActivity() {
         // Reset errors.
         user.error = null
         password.error = null
-        domain.error = null
 
-
-        // Store values at the time of the requestGrades attempt.
         val userStr = user.text.toString()
         val passwordStr = password.text.toString()
-        val domainStr = domain.text.toString()
 
         var cancel = false
         var focusView: View? = null
@@ -66,12 +50,6 @@ class LoginActivity : AppCompatActivity() {
         // Check for a valid password, if the user entered one.
         if (!TextUtils.isEmpty(passwordStr) && !isPasswordValid(passwordStr)) {
             password.error = getString(R.string.error_invalid_password)
-            focusView = password
-            cancel = true
-        }
-
-        if (!isDomainValid(domainStr)) {
-            domain.error = getString(R.string.error_invalid_domain)
             focusView = password
             cancel = true
         }
@@ -88,23 +66,20 @@ class LoginActivity : AppCompatActivity() {
         }
 
         if (cancel) {
-            // There was an error; don't attempt requestGrades and focus the first
-            // form field with an error.
             focusView?.requestFocus()
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user requestGrades attempt.
             showProgress(true)
-            login(domainStr, userStr, passwordStr)
+            scrapeGrades(userStr, passwordStr)
         }
     }
 
-    private fun login(domainStr: String, userStr: String, passwordStr: String) {
-        Toast.makeText(this, "done",Toast.LENGTH_LONG).show()
-        showProgress(false)
+    private fun scrapeGrades(userStr: String, passwordStr: String) {
+        GlobalScope.launch(Dispatchers.Main) {
+            val grades = hisService.requestGrades(userStr, passwordStr)
+            Toast.makeText(applicationContext, grades.size.toString(), Toast.LENGTH_LONG).show()
+            showProgress(false)
+        }
     }
-
-    private fun isDomainValid(domainStr: String): Boolean = URLUtil.isValidUrl(domainStr)
 
     private fun isUserValid(user: String): Boolean = user.length > 2
 
