@@ -9,7 +9,7 @@ import org.junit.Test
 class HisServiceIntegrationTest {
 
     //@Test Insert real credentials to test
-    fun `should scrape grades`() {
+    suspend fun `should scrape grades`() {
         val service = HisService()
 
         val result = service.requestGrades("", "")

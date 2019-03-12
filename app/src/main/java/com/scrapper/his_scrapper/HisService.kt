@@ -1,6 +1,5 @@
 package com.scrapper.his_scrapper
 
-import android.annotation.SuppressLint
 import io.ktor.client.HttpClient
 import io.ktor.client.features.cookies.AcceptAllCookiesStorage
 import io.ktor.client.features.cookies.HttpCookies
@@ -10,26 +9,13 @@ import io.ktor.client.request.post
 import io.ktor.client.response.HttpResponse
 import io.ktor.client.response.readText
 import io.ktor.http.Parameters
-import kotlinx.coroutines.runBlocking
 import org.jsoup.Jsoup
 import org.jsoup.select.Elements
 import java.text.SimpleDateFormat
-import java.util.*
 import javax.inject.Inject
 
-
-data class Grade(
-    val name: String,
-    val semester: String,
-    val isPassed: Boolean,
-    val creditPoints: Float?,
-    val grade: Float?,
-    val date: Date?
-)
-
-
 interface IHisService {
-    fun requestGrades(user: String, password: String): List<Grade>
+    suspend fun requestGrades(user: String, password: String): List<Grade>
 }
 
 class HisService @Inject constructor() : IHisService {
@@ -42,8 +28,7 @@ class HisService @Inject constructor() : IHisService {
         "https://his-www.dv.fh-frankfurt.de/qisserver/rds?state=notenspiegelStudent&next=list.vm&nextdir=qispos/notenspiegel/student&createInfos=Y&struct=auswahlBaum&nodeID=auswahlBaum%7Cabschluss%3Aabschl%3D21%2Cstgnr%3D1&expand=0"
 
 
-    @SuppressLint("SimpleDateFormat")
-    override fun requestGrades(user: String, password: String): List<Grade> {
+    override suspend fun requestGrades(user: String, password: String): List<Grade> {
         val gradingPage = requestGradingPage(user, password)
 
         val grades = Jsoup.parse(gradingPage)
@@ -66,31 +51,25 @@ class HisService @Inject constructor() : IHisService {
         date = if (it[8].text().isNullOrBlank()) null else SimpleDateFormat("dd.mm.yyyy").parse(it[8].text())
     )
 
-    private fun requestGradingPage(user: String, password: String): String {
-        var gradingDocument = ""
-        runBlocking {
-            val client = HttpClient {
-                install(HttpCookies) {
-                    storage = AcceptAllCookiesStorage()
-                }
+    suspend fun requestGradingPage(user: String, password: String): String {
+        val client = HttpClient {
+            install(HttpCookies) {
+                storage = AcceptAllCookiesStorage()
             }
-
-            client.post<HttpResponse>(authRequest) {
-                body = FormDataContent(formData = Parameters.build {
-                    append("asdf", user)
-                    append("fdsa", password)
-                    append("submit", "Anmelden")
-                })
-            }
-            val gradingPage = client.get<HttpResponse>(courseOverviewRequest).readText()
-
-            val asi = "(?<=asi=)(.*)(?=\"  title)".toRegex().findAll(gradingPage).first().value
-
-            val rq = appendUri(gradingRequest, "asi=$asi")
-
-            gradingDocument = client.get<HttpResponse>(rq.toASCIIString()).readText()
-
         }
-        return gradingDocument
+
+        client.post<HttpResponse>(authRequest) {
+            body = FormDataContent(formData = Parameters.build {
+                append("asdf", user)
+                append("fdsa", password)
+                append("submit", "Anmelden")
+            })
+        }
+
+        val gradingPage = client.get<HttpResponse>(courseOverviewRequest).readText()
+        val asi = "(?<=asi=)(.*)(?=\"  title)".toRegex().findAll(gradingPage).first().value
+        val rq = appendUri(gradingRequest, "asi=$asi")
+        val doc = client.get<HttpResponse>(rq.toASCIIString()).readText()
+        return doc
     }
 }
