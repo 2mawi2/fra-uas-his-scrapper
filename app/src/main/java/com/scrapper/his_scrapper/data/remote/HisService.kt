@@ -1,5 +1,7 @@
-package com.scrapper.his_scrapper
+package com.scrapper.his_scrapper.data.remote
 
+import com.scrapper.his_scrapper.application.Grade
+import com.scrapper.his_scrapper.application.appendUri
 import io.ktor.client.HttpClient
 import io.ktor.client.features.cookies.AcceptAllCookiesStorage
 import io.ktor.client.features.cookies.HttpCookies
@@ -42,14 +44,15 @@ class HisService @Inject constructor() : IHisService {
         return grades
     }
 
-    private fun mapRowToGrade(it: Elements): Grade = Grade(
-        name = it[1].text(),
-        semester = it[2].text(),
-        grade = it[3].text().replace(",", ".").toFloatOrNull(),
-        creditPoints = it[5].text().replace(",", ".").toFloatOrNull(),
-        isPassed = it[4].text().contains("bestanden"),
-        date = if (it[8].text().isNullOrBlank()) null else SimpleDateFormat("dd.mm.yyyy").parse(it[8].text())
-    )
+    private fun mapRowToGrade(it: Elements): Grade =
+        Grade(
+            name = it[1].text(),
+            semester = it[2].text(),
+            grade = it[3].text().replace(",", ".").toFloatOrNull(),
+            credits = it[5].text().replace(",", ".").toFloatOrNull(),
+            passed = it[4].text().contains("bestanden"),
+            date = if (it[8].text().isNullOrBlank()) null else SimpleDateFormat("dd.mm.yyyy").parse(it[8].text())
+        )
 
     suspend fun requestGradingPage(user: String, password: String): String {
         val client = HttpClient {

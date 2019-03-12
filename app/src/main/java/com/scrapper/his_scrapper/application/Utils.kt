@@ -1,4 +1,4 @@
-package com.scrapper.his_scrapper
+package com.scrapper.his_scrapper.application
 
 import java.net.URI
 

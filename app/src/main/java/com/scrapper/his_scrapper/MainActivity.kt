@@ -1,8 +1,11 @@
 package com.scrapper.his_scrapper
 
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.scrapper.his_scrapper.application.DaggerMainComponent
+import com.scrapper.his_scrapper.application.MainModule
+import com.scrapper.his_scrapper.data.local.IPreferencesRepo
 import javax.inject.Inject
 
 

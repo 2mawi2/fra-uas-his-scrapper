@@ -1,7 +1,7 @@
-package com.scrapper.his_scrapper
+package com.scrapper.his_scrapper.data.local
 
 import android.content.Context
-import android.content.ContextWrapper
+import com.scrapper.his_scrapper.R
 import javax.inject.Inject
 
 interface IPreferencesRepo {

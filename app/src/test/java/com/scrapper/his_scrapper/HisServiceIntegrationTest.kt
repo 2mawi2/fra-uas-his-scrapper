@@ -1,10 +1,7 @@
 package com.scrapper.his_scrapper
 
-import org.amshove.kluent.should
-import org.amshove.kluent.shouldContain
+import com.scrapper.his_scrapper.data.remote.HisService
 import org.amshove.kluent.shouldNotBeEmpty
-import org.amshove.kluent.shouldNotContain
-import org.junit.Test
 
 class HisServiceIntegrationTest {
 

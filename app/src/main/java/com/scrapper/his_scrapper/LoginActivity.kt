@@ -2,17 +2,20 @@ package com.scrapper.his_scrapper
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
 
 import android.widget.Toast
+import com.scrapper.his_scrapper.application.DaggerMainComponent
+import com.scrapper.his_scrapper.application.MainModule
+import com.scrapper.his_scrapper.data.local.IGradeRepo
+import com.scrapper.his_scrapper.data.remote.IHisService
 
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,6 +24,9 @@ class LoginActivity : AppCompatActivity() {
 
     @Inject
     lateinit var hisService: IHisService
+
+    @Inject
+    lateinit var gradeRepo: IGradeRepo
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -75,7 +81,9 @@ class LoginActivity : AppCompatActivity() {
 
     private fun scrapeGrades(userStr: String, passwordStr: String) {
         GlobalScope.launch(Dispatchers.Main) {
-            val grades = hisService.requestGrades(userStr, passwordStr)
+            var grades = hisService.requestGrades(userStr, passwordStr)
+            grades.forEach { gradeRepo.insert(it) }
+            grades = gradeRepo.getAll()
             Toast.makeText(applicationContext, grades.size.toString(), Toast.LENGTH_LONG).show()
             showProgress(false)
         }

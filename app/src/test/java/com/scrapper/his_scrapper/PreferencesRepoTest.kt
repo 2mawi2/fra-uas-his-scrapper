@@ -5,6 +5,8 @@ import org.junit.Test
 
 import android.content.SharedPreferences
 import android.content.res.Resources
+import com.scrapper.his_scrapper.data.local.IPreferencesRepo
+import com.scrapper.his_scrapper.data.local.PreferencesRepo
 import org.mockito.Mockito.*
 
 
