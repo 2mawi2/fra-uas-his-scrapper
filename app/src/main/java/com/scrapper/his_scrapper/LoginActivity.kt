@@ -84,8 +84,8 @@ class LoginActivity : AppCompatActivity() {
 
     private fun scrapeGrades(userStr: String, passwordStr: String) {
         GlobalScope.launch(Dispatchers.Main) {
-            val result = hisService.requestGrades(userStr, passwordStr)
 
+            val result = hisService.requestGrades(userStr, passwordStr)
             if (result.success) {
                 preferencesRepo.storeCredentials(Credentials(userStr, passwordStr))
                 preferencesRepo.setUserLoggedIn(true)
@@ -93,11 +93,12 @@ class LoginActivity : AppCompatActivity() {
                 showProgress(false)
                 startActivity(Intent(applicationContext, MainActivity::class.java))
             } else {
+                preferencesRepo.setUserLoggedIn(false)
+                showProgress(false)
                 when (result.reason) {
                     Reason.CREDENTIALS -> toast("Invalid credentials")
                     else -> toast("Error while scrapping grades")
                 }
-                showProgress(false)
             }
         }
     }

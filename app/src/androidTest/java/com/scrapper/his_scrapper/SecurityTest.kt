@@ -7,9 +7,10 @@ import org.amshove.kluent.shouldBeEqualTo
 import org.amshove.kluent.shouldNotBeEqualTo
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.*
 
 @RunWith(AndroidJUnit4::class)
-class EncryptorTest {
+class SecurityTest {
 
     @Test
     fun shouldEncryptData() {
@@ -31,8 +32,7 @@ class EncryptorTest {
 
         val result = encryptor.encryptText(unecrypted)
 
-        var decrypted = decryptor.decryptData(
-            result.encryptedData, result.iv)
+        val decrypted = decryptor.decryptData(result.encryptedData, result.iv)
 
         decrypted.shouldBeEqualTo(unecrypted)
     }
