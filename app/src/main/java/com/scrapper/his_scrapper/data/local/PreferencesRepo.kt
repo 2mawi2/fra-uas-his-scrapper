@@ -43,7 +43,7 @@ class PreferencesRepo @Inject constructor(
 
         return Credentials(
             userName = userName,
-            password = decryptor.decryptData(password.toByteArray(), iv.toByteArray())
+            password = decryptor.decryptData(password, iv)
         )
     }
 

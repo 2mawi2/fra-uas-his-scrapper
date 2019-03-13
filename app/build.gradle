@@ -52,6 +52,7 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.1.0-alpha4'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0-alpha4'
     androidTestImplementation 'org.mockito:mockito-core:2.25.0'
+    androidTestImplementation 'org.amshove.kluent:kluent-android:1.41'
 }
 
 android {

@@ -2,6 +2,7 @@ package com.scrapper.his_scrapper.application
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.util.Base64
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -10,7 +11,7 @@ import javax.crypto.spec.GCMParameterSpec
 
 
 interface IDecryptor {
-    fun decryptData(encryptedData: ByteArray, encryptionIv: ByteArray): String
+    fun decryptData(encryptedData: String, encryptionIv: String): String
 }
 
 class Decryptor : IDecryptor {
@@ -27,13 +28,24 @@ class Decryptor : IDecryptor {
         keyStore!!.load(null)
     }
 
-    override fun decryptData(encryptedData: ByteArray, encryptionIv: ByteArray): String {
-
+    override fun decryptData(encryptedData: String, encryptionIv: String): String {
         val cipher = Cipher.getInstance(TRANSFORMATION)
-        val spec = GCMParameterSpec(128, encryptionIv)
+        val spec = GCMParameterSpec(
+            128, Base64.decode(
+                encryptionIv,
+                Base64.DEFAULT
+            )
+        )
         cipher.init(Cipher.DECRYPT_MODE, getSecretKey(alias), spec)
 
-        return kotlinx.io.core.String(cipher.doFinal(encryptedData))
+        return kotlinx.io.core.String(
+            cipher.doFinal(
+                Base64.decode(
+                    encryptedData,
+                    Base64.DEFAULT
+                )
+            )
+        )
     }
 
     private fun getSecretKey(alias: String): SecretKey {
@@ -65,8 +77,14 @@ class Encryptor : IEncryptor {
         cipher.init(Cipher.ENCRYPT_MODE, getSecretKey())
 
         return EncryptionResult(
-            encryptedData = cipher.doFinal(textToEncrypt.toByteArray(charset("UTF-8"))).toString(),
-            iv = cipher.iv.toString()
+            encryptedData = Base64.encodeToString(
+                cipher.doFinal(textToEncrypt.toByteArray(charset("UTF-8"))),
+                Base64.DEFAULT
+            ),
+            iv = Base64.encodeToString(
+                cipher.iv,
+                Base64.DEFAULT
+            )
         )
     }
 
