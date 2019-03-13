@@ -1,10 +1,20 @@
 package com.scrapper.his_scrapper.data.local
 
 import androidx.room.*
-import com.scrapper.his_scrapper.application.Grade
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
+
+@Entity(tableName = "grades")
+data class Grade(
+    @PrimaryKey(autoGenerate = true) var uid: Long = 0,
+    @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "semester") val semester: String,
+    @ColumnInfo(name = "is_passed") val passed: Boolean,
+    @ColumnInfo(name = "credits") val credits: Float?,
+    @ColumnInfo(name = "grade") val grade: Float?,
+    @ColumnInfo(name = "date") val date: Date?
+)
 
 class Converters {
     @TypeConverter
@@ -45,9 +55,23 @@ interface IGradeRepo {
     suspend fun getAll(): List<Grade>
 
     suspend fun insert(word: Grade)
+
+    suspend fun updateOrCreate(grades: List<Grade>)
 }
 
 class GradeRepo @Inject constructor(private val gradeDao: GradeDao) : IGradeRepo {
+    override suspend fun updateOrCreate(grades: List<Grade>) {
+        val existingByName = getAll().map { it.name to it }
+        return grades.forEach {
+            val existingGrade = existingByName.firstOrNull { i -> i.first == it.name }?.second
+            if (existingGrade == null) {
+                gradeDao.insert(it)
+            } else {
+                gradeDao.update(existingGrade)
+            }
+        }
+    }
+
     override suspend fun getAll(): List<Grade> = gradeDao.getAll()
 
     override suspend fun insert(word: Grade) = gradeDao.insert(word)

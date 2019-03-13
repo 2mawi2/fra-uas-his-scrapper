@@ -82,7 +82,9 @@ class LoginActivity : AppCompatActivity() {
     private fun scrapeGrades(userStr: String, passwordStr: String) {
         GlobalScope.launch(Dispatchers.Main) {
             var grades = hisService.requestGrades(userStr, passwordStr)
-            grades.forEach { gradeRepo.insert(it) }
+
+            gradeRepo.updateOrCreate(grades)
+
             grades = gradeRepo.getAll()
             Toast.makeText(applicationContext, grades.size.toString(), Toast.LENGTH_LONG).show()
             showProgress(false)

@@ -1,7 +1,7 @@
 package com.scrapper.his_scrapper.data.remote
 
-import com.scrapper.his_scrapper.application.Grade
 import com.scrapper.his_scrapper.application.appendUri
+import com.scrapper.his_scrapper.data.local.Grade
 import io.ktor.client.HttpClient
 import io.ktor.client.features.cookies.AcceptAllCookiesStorage
 import io.ktor.client.features.cookies.HttpCookies
