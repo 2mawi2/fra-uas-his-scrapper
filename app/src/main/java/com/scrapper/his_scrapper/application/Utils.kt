@@ -2,15 +2,15 @@ package com.scrapper.his_scrapper.application
 
 import java.net.URI
 
-fun appendUri(uri: String, appendQuery: String): URI {
+fun appendQueryParam(uri: String, queryParam: String): URI {
     val oldUri = URI(uri)
 
     var newQuery = oldUri.query
 
     if (newQuery == null) {
-        newQuery = appendQuery
+        newQuery = queryParam
     } else {
-        newQuery += "&$appendQuery"
+        newQuery += "&$queryParam"
     }
 
     return URI(

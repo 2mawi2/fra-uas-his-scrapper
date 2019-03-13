@@ -29,37 +29,33 @@ class MainModule {
     }
 
     @Provides
-    fun provideContext(): Context {
-        return context
+    fun provideContext(): Context = context
+
+    @Provides
+    fun providePreferencesRepo(encryptor: IEncryptor, decryptor: IDecryptor): IPreferencesRepo {
+        return PreferencesRepo(context, decryptor, encryptor)
     }
 
     @Provides
-    fun providePreferencesRepo(): IPreferencesRepo {
-        return PreferencesRepo(context)
-    }
+    fun providesHisService(): IHisService = HisService()
 
     @Provides
-    fun providesHisService(): IHisService {
-        return HisService()
-    }
+    fun provideEncryptor(): IEncryptor = Encryptor()
 
-    @Singleton
     @Provides
-    fun providesScrapperDatabase(): ScrapperDatabase {
-        return db
-    }
+    fun provideDecryptor(): IDecryptor = Decryptor()
 
     @Singleton
     @Provides
-    fun provideGradeDao(db: ScrapperDatabase): GradeDao {
-        return db.gradeDao()
-    }
+    fun providesScrapperDatabase(): ScrapperDatabase = db
 
     @Singleton
     @Provides
-    fun provideGradeRepo(gradeDao: GradeDao): IGradeRepo {
-        return GradeRepo(gradeDao)
-    }
+    fun provideGradeDao(db: ScrapperDatabase): GradeDao = db.gradeDao()
+
+    @Singleton
+    @Provides
+    fun provideGradeRepo(gradeDao: GradeDao): IGradeRepo = GradeRepo(gradeDao)
 }
 
 @Singleton
@@ -70,7 +66,6 @@ interface MainComponent {
     fun inject(app: MainActivity)
 
     fun inject(app: LoginActivity)
-
 
     fun productDao(): GradeDao
 

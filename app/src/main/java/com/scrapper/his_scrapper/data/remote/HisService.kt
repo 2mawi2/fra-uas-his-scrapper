@@ -1,7 +1,9 @@
 package com.scrapper.his_scrapper.data.remote
 
-import com.scrapper.his_scrapper.application.appendUri
-import com.scrapper.his_scrapper.data.local.Grade
+import com.scrapper.his_scrapper.application.Grade
+import com.scrapper.his_scrapper.application.HisServiceResult
+import com.scrapper.his_scrapper.application.Reason
+import com.scrapper.his_scrapper.application.appendQueryParam
 import io.ktor.client.HttpClient
 import io.ktor.client.features.cookies.AcceptAllCookiesStorage
 import io.ktor.client.features.cookies.HttpCookies
@@ -13,11 +15,14 @@ import io.ktor.client.response.readText
 import io.ktor.http.Parameters
 import org.jsoup.Jsoup
 import org.jsoup.select.Elements
+import java.lang.Exception
 import java.text.SimpleDateFormat
 import javax.inject.Inject
 
+
+
 interface IHisService {
-    suspend fun requestGrades(user: String, password: String): List<Grade>
+    suspend fun requestGrades(user: String, password: String): HisServiceResult
 }
 
 class HisService @Inject constructor() : IHisService {
@@ -29,11 +34,22 @@ class HisService @Inject constructor() : IHisService {
     var gradingRequest =
         "https://his-www.dv.fh-frankfurt.de/qisserver/rds?state=notenspiegelStudent&next=list.vm&nextdir=qispos/notenspiegel/student&createInfos=Y&struct=auswahlBaum&nodeID=auswahlBaum%7Cabschluss%3Aabschl%3D21%2Cstgnr%3D1&expand=0"
 
+    companion object {
+        val client = HttpClient {
+            install(HttpCookies) {
+                storage = AcceptAllCookiesStorage()
+            }
+        }
+    }
 
-    override suspend fun requestGrades(user: String, password: String): List<Grade> {
-        val gradingPage = requestGradingPage(user, password)
+    override suspend fun requestGrades(user: String, password: String): HisServiceResult {
+        val (page, reason) = requestGradingPage(user, password)
 
-        val grades = Jsoup.parse(gradingPage)
+        if (reason != Reason.NONE) {
+            return HisServiceResult(reason = reason, success = false)
+        }
+
+        val grades = Jsoup.parse(page)
             .select("table")[1]
             .select("tr")
             .map { it.children() }
@@ -41,7 +57,7 @@ class HisService @Inject constructor() : IHisService {
             .filter { it.first().hasClass("qis_kontoOnTop") }
             .map { mapRowToGrade(it) }
 
-        return grades
+        return HisServiceResult(grades = grades, success = true)
     }
 
     private fun mapRowToGrade(it: Elements): Grade =
@@ -54,25 +70,27 @@ class HisService @Inject constructor() : IHisService {
             date = if (it[8].text().isNullOrBlank()) null else SimpleDateFormat("dd.mm.yyyy").parse(it[8].text())
         )
 
-    suspend fun requestGradingPage(user: String, password: String): String {
-        val client = HttpClient {
-            install(HttpCookies) {
-                storage = AcceptAllCookiesStorage()
-            }
-        }
-
-        client.post<HttpResponse>(authRequest) {
+    suspend fun requestGradingPage(user: String, password: String): Pair<String, Reason> {
+        var authPageResult = client.post<HttpResponse>(authRequest) {
             body = FormDataContent(formData = Parameters.build {
                 append("asdf", user)
                 append("fdsa", password)
                 append("submit", "Anmelden")
             })
+        }.readText()
+
+        if (authPageResult.contains("Anmeldung fehlgeschlagen")) {
+            return Pair("", Reason.CREDENTIALS)
         }
 
-        val gradingPage = client.get<HttpResponse>(courseOverviewRequest).readText()
-        val asi = "(?<=asi=)(.*)(?=\"  title)".toRegex().findAll(gradingPage).first().value
-        val rq = appendUri(gradingRequest, "asi=$asi")
-        val doc = client.get<HttpResponse>(rq.toASCIIString()).readText()
-        return doc
+        return try {
+            val gradingPage = client.get<HttpResponse>(courseOverviewRequest).readText()
+            val asi = "(?<=asi=)(.*)(?=\"  title)".toRegex().findAll(gradingPage).first().value
+            val rq = appendQueryParam(gradingRequest, "asi=$asi")
+            val doc = client.get<HttpResponse>(rq.toASCIIString()).readText()
+            Pair(doc, Reason.NONE) // success
+        } catch (e: Exception) {
+            Pair("", Reason.PAGE)
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.scrapper.his_scrapper
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
@@ -10,7 +11,10 @@ import android.view.View
 import android.widget.Toast
 import com.scrapper.his_scrapper.application.DaggerMainComponent
 import com.scrapper.his_scrapper.application.MainModule
+import com.scrapper.his_scrapper.application.Reason
+import com.scrapper.his_scrapper.data.local.Credentials
 import com.scrapper.his_scrapper.data.local.IGradeRepo
+import com.scrapper.his_scrapper.data.local.IPreferencesRepo
 import com.scrapper.his_scrapper.data.remote.IHisService
 
 import kotlinx.android.synthetic.main.activity_login.*
@@ -28,6 +32,9 @@ class LoginActivity : AppCompatActivity() {
     @Inject
     lateinit var gradeRepo: IGradeRepo
 
+    @Inject
+    lateinit var preferencesRepo: IPreferencesRepo
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupDI()
@@ -42,8 +49,6 @@ class LoginActivity : AppCompatActivity() {
 
 
     private fun attemptLogin() {
-
-        // Reset errors.
         user.error = null
         password.error = null
 
@@ -53,14 +58,12 @@ class LoginActivity : AppCompatActivity() {
         var cancel = false
         var focusView: View? = null
 
-        // Check for a valid password, if the user entered one.
         if (!TextUtils.isEmpty(passwordStr) && !isPasswordValid(passwordStr)) {
             password.error = getString(R.string.error_invalid_password)
             focusView = password
             cancel = true
         }
 
-        // Check for a valid email address.
         if (TextUtils.isEmpty(userStr)) {
             user.error = getString(R.string.error_field_required)
             focusView = user
@@ -81,14 +84,26 @@ class LoginActivity : AppCompatActivity() {
 
     private fun scrapeGrades(userStr: String, passwordStr: String) {
         GlobalScope.launch(Dispatchers.Main) {
-            var grades = hisService.requestGrades(userStr, passwordStr)
+            val result = hisService.requestGrades(userStr, passwordStr)
 
-            gradeRepo.updateOrCreate(grades)
-
-            grades = gradeRepo.getAll()
-            Toast.makeText(applicationContext, grades.size.toString(), Toast.LENGTH_LONG).show()
-            showProgress(false)
+            if (result.success) {
+                preferencesRepo.storeCredentials(Credentials(userStr, passwordStr))
+                preferencesRepo.setUserLoggedIn(true)
+                gradeRepo.updateOrCreate(result.grades)
+                showProgress(false)
+                startActivity(Intent(applicationContext, MainActivity::class.java))
+            } else {
+                when (result.reason) {
+                    Reason.CREDENTIALS -> toast("Invalid credentials")
+                    else -> toast("Error while scrapping grades")
+                }
+                showProgress(false)
+            }
         }
+    }
+
+    private fun toast(message: String) {
+        Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
     }
 
     private fun isUserValid(user: String): Boolean = user.length > 2
