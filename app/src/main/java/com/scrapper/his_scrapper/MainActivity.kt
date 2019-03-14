@@ -1,25 +1,26 @@
 package com.scrapper.his_scrapper
 
-import android.app.ListActivity
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.ArrayAdapter
-import android.widget.TableRow
-import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import com.scrapper.his_scrapper.application.DaggerMainComponent
+import com.scrapper.his_scrapper.application.HisServiceResult
+import com.scrapper.his_scrapper.application.MainModule
+import com.scrapper.his_scrapper.application.Reason.CREDENTIALS
+import com.scrapper.his_scrapper.application.Reason.PAGE
+import com.scrapper.his_scrapper.application.toast
 import com.scrapper.his_scrapper.data.local.IGradeRepo
 import com.scrapper.his_scrapper.data.local.IPreferencesRepo
+import com.scrapper.his_scrapper.data.remote.IHisService
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
-import com.scrapper.his_scrapper.application.*
-import com.scrapper.his_scrapper.application.Reason.*
-import com.scrapper.his_scrapper.data.remote.IHisService
 
 
 class MainActivity : AppCompatActivity() {

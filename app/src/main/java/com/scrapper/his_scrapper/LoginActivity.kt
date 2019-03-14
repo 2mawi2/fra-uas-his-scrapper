@@ -3,20 +3,16 @@ package com.scrapper.his_scrapper
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
-
-import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.scrapper.his_scrapper.application.DaggerMainComponent
 import com.scrapper.his_scrapper.application.MainModule
 import com.scrapper.his_scrapper.application.toast
 import com.scrapper.his_scrapper.data.local.Credentials
-import com.scrapper.his_scrapper.data.local.IGradeRepo
 import com.scrapper.his_scrapper.data.local.IPreferencesRepo
 import com.scrapper.his_scrapper.data.remote.IHisService
-
 import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope

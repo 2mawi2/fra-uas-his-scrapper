@@ -1,10 +1,7 @@
 package com.scrapper.his_scrapper.application
 
-import org.amshove.kluent.shouldBe
 import org.amshove.kluent.shouldEqual
 import org.junit.Test
-
-import org.junit.Assert.*
 
 class UtilsTest {
 

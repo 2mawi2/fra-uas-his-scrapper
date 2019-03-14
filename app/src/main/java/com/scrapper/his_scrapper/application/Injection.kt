@@ -1,6 +1,5 @@
 package com.scrapper.his_scrapper.application
 
-import android.app.Application
 import android.content.Context
 import androidx.room.Room
 import com.scrapper.his_scrapper.LoginActivity

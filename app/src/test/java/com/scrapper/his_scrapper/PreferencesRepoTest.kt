@@ -1,8 +1,6 @@
 package com.scrapper.his_scrapper
 
 import android.content.Context
-import org.junit.Test
-
 import android.content.SharedPreferences
 import android.content.res.Resources
 import com.nhaarman.mockito_kotlin.mock
@@ -15,8 +13,8 @@ import com.scrapper.his_scrapper.data.local.IPreferencesRepo
 import com.scrapper.his_scrapper.data.local.PreferencesRepo
 import com.scrapper.his_scrapper.testUtils.anything
 import org.amshove.kluent.shouldBeEqualTo
+import org.junit.Test
 import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
 import org.mockito.Mockito.*
 
 

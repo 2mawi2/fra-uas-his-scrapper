@@ -1,10 +1,16 @@
 package com.scrapper.his_scrapper
 
-import android.content.Intent
+import android.app.IntentService
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.scrapper.his_scrapper.application.DaggerMainComponent
+import com.scrapper.his_scrapper.application.MainModule
 import com.scrapper.his_scrapper.data.local.IGradeRepo
 import com.scrapper.his_scrapper.data.local.IPreferencesRepo
 import com.scrapper.his_scrapper.data.remote.IHisService
@@ -13,13 +19,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.abs
-import android.app.*
-import android.app.NotificationManager
-import android.util.Log
-import com.scrapper.his_scrapper.application.DaggerMainComponent
-import com.scrapper.his_scrapper.application.MainModule
-import java.lang.Exception
-import kotlin.math.log
 
 
 private const val ACTION_CHECK = "com.scrapper.his_scrapper.action.CHECK"

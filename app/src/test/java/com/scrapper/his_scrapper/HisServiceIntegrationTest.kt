@@ -2,7 +2,6 @@ package com.scrapper.his_scrapper
 
 import com.scrapper.his_scrapper.application.Reason
 import com.scrapper.his_scrapper.data.remote.HisService
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.amshove.kluent.*
 import org.junit.Test
