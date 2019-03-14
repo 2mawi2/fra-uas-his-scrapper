@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.room.Room
 import com.scrapper.his_scrapper.LoginActivity
 import com.scrapper.his_scrapper.MainActivity
+import com.scrapper.his_scrapper.NotificationService
 import com.scrapper.his_scrapper.data.local.*
 import com.scrapper.his_scrapper.data.remote.HisService
 import com.scrapper.his_scrapper.data.remote.IHisService
@@ -63,9 +64,11 @@ class MainModule {
 interface MainComponent {
     fun context(): Context
 
-    fun inject(app: MainActivity)
+    fun inject(mainActivity: MainActivity)
 
-    fun inject(app: LoginActivity)
+    fun inject(loginActivity: LoginActivity)
+
+    fun inject(notificationService: NotificationService)
 
     fun productDao(): GradeDao
 

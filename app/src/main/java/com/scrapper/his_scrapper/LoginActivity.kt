@@ -84,7 +84,6 @@ class LoginActivity : AppCompatActivity() {
 
     private fun scrapeGrades(userStr: String, passwordStr: String) {
         GlobalScope.launch(Dispatchers.Main) {
-
             val result = hisService.requestGrades(userStr, passwordStr)
             if (result.success) {
                 preferencesRepo.storeCredentials(Credentials(userStr, passwordStr))
