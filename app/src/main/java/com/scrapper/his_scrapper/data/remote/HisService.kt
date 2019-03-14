@@ -20,9 +20,9 @@ import java.text.SimpleDateFormat
 import javax.inject.Inject
 
 
-
 interface IHisService {
     suspend fun requestGrades(user: String, password: String): HisServiceResult
+    suspend fun checkCredentials(user: String, password: String): Boolean
 }
 
 class HisService @Inject constructor() : IHisService {
@@ -70,20 +70,21 @@ class HisService @Inject constructor() : IHisService {
             date = if (it[8].text().isNullOrBlank()) null else SimpleDateFormat("dd.mm.yyyy").parse(it[8].text())
         )
 
-    suspend fun requestGradingPage(user: String, password: String): Pair<String, Reason> {
-        var authPageResult = client.post<HttpResponse>(authRequest) {
-            body = FormDataContent(formData = Parameters.build {
-                append("asdf", user)
-                append("fdsa", password)
-                append("submit", "Anmelden")
-            })
-        }.readText()
-
-        if (authPageResult.contains("Anmeldung fehlgeschlagen")) {
-            return Pair("", Reason.CREDENTIALS)
-        }
-
+    override suspend fun checkCredentials(user: String, password: String): Boolean {
         return try {
+            !hasLoginFailed(login(user, password))
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    suspend fun requestGradingPage(user: String, password: String): Pair<String, Reason> {
+        return try {
+            val authPageResult = login(user, password)
+            if (hasLoginFailed(authPageResult)) {
+                return Pair("", Reason.CREDENTIALS)
+            }
+
             val gradingPage = client.get<HttpResponse>(courseOverviewRequest).readText()
             val asi = "(?<=asi=)(.*)(?=\"  title)".toRegex().findAll(gradingPage).first().value
             val rq = appendQueryParam(gradingRequest, "asi=$asi")
@@ -92,5 +93,18 @@ class HisService @Inject constructor() : IHisService {
         } catch (e: Exception) {
             Pair("", Reason.PAGE)
         }
+    }
+
+    private fun hasLoginFailed(authPageResult: String) =
+        authPageResult.contains("Anmeldung fehlgeschlagen")
+
+    private suspend fun login(user: String, password: String): String {
+        return client.post<HttpResponse>(authRequest) {
+            body = FormDataContent(formData = Parameters.build {
+                append("asdf", user)
+                append("fdsa", password)
+                append("submit", "Anmelden")
+            })
+        }.readText()
     }
 }

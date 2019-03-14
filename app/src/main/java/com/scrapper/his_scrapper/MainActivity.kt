@@ -7,8 +7,6 @@ import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.TableRow
 import android.widget.TextView
-import com.scrapper.his_scrapper.application.DaggerMainComponent
-import com.scrapper.his_scrapper.application.MainModule
 import com.scrapper.his_scrapper.data.local.IGradeRepo
 import com.scrapper.his_scrapper.data.local.IPreferencesRepo
 import kotlinx.android.synthetic.main.activity_main.*
@@ -19,7 +17,9 @@ import javax.inject.Inject
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
-import android.widget.Toast
+import com.scrapper.his_scrapper.application.*
+import com.scrapper.his_scrapper.application.Reason.*
+import com.scrapper.his_scrapper.data.remote.IHisService
 
 
 class MainActivity : AppCompatActivity() {
@@ -30,24 +30,51 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var gradeRepo: IGradeRepo
 
+    @Inject
+    lateinit var hisService: IHisService
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupDI()
+        updateActivity()
+    }
 
+    private fun updateActivity() {
         if (preferencesRepo.isUserLoggedIn()) {
             setContentView(R.layout.activity_main)
-
             GlobalScope.launch(Dispatchers.Main) {
-                val grades = gradeRepo.getAll()
-                val listItems = grades.map { "${it.name} : ${it.grade}" }.toTypedArray()
-
-                gradeList.adapter = ArrayAdapter(applicationContext, android.R.layout.simple_list_item_1, listItems)
-                sheduleNotifications()
+                val credentials = preferencesRepo.getCredentials()
+                val result = hisService.requestGrades(credentials.userName, credentials.password)
+                if (result.success) {
+                    gradeRepo.updateOrCreate(result.grades)
+                    updateGradeList()
+                    sheduleNotifications()
+                } else {
+                    handleFetchFailure(result)
+                }
             }
-
         } else {
-            startActivity(Intent(this, LoginActivity::class.java))
+            startActivity(Intent(applicationContext, LoginActivity::class.java))
         }
+    }
+
+    private suspend fun handleFetchFailure(result: HisServiceResult) {
+        when (result.reason) {
+            CREDENTIALS -> {
+                preferencesRepo.setUserLoggedIn(false)
+                startActivity(Intent(applicationContext, LoginActivity::class.java))
+            }
+            PAGE -> {
+                toast(applicationContext, "Error while fetching grades.")
+                updateGradeList()
+            }
+        }
+    }
+
+    private suspend fun updateGradeList() {
+        val grades = gradeRepo.getAll()
+        val listItems = grades.map { "${it.name} : ${it.grade}" }.toTypedArray()
+        gradeList.adapter = ArrayAdapter(applicationContext, android.R.layout.simple_list_item_1, listItems)
     }
 
     private fun sheduleNotifications() {
@@ -68,6 +95,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupDI() {
-        DaggerMainComponent.builder().mainModule(MainModule(this)).build().inject(this)
+        DaggerMainComponent.builder().mainModule(MainModule(applicationContext)).build().inject(this)
     }
 }

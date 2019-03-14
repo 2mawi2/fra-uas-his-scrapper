@@ -11,7 +11,7 @@ import android.view.View
 import android.widget.Toast
 import com.scrapper.his_scrapper.application.DaggerMainComponent
 import com.scrapper.his_scrapper.application.MainModule
-import com.scrapper.his_scrapper.application.Reason
+import com.scrapper.his_scrapper.application.toast
 import com.scrapper.his_scrapper.data.local.Credentials
 import com.scrapper.his_scrapper.data.local.IGradeRepo
 import com.scrapper.his_scrapper.data.local.IPreferencesRepo
@@ -28,9 +28,6 @@ class LoginActivity : AppCompatActivity() {
 
     @Inject
     lateinit var hisService: IHisService
-
-    @Inject
-    lateinit var gradeRepo: IGradeRepo
 
     @Inject
     lateinit var preferencesRepo: IPreferencesRepo
@@ -78,32 +75,25 @@ class LoginActivity : AppCompatActivity() {
             focusView?.requestFocus()
         } else {
             showProgress(true)
-            scrapeGrades(userStr, passwordStr)
+            login(userStr, passwordStr)
         }
     }
 
-    private fun scrapeGrades(userStr: String, passwordStr: String) {
+    private fun login(userStr: String, passwordStr: String) {
         GlobalScope.launch(Dispatchers.Main) {
-            val result = hisService.requestGrades(userStr, passwordStr)
-            if (result.success) {
+            val validCredentials = hisService.checkCredentials(userStr, passwordStr)
+
+            if (validCredentials) {
                 preferencesRepo.storeCredentials(Credentials(userStr, passwordStr))
                 preferencesRepo.setUserLoggedIn(true)
-                gradeRepo.updateOrCreate(result.grades)
                 showProgress(false)
                 startActivity(Intent(applicationContext, MainActivity::class.java))
             } else {
                 preferencesRepo.setUserLoggedIn(false)
                 showProgress(false)
-                when (result.reason) {
-                    Reason.CREDENTIALS -> toast("Invalid credentials")
-                    else -> toast("Error while scrapping grades")
-                }
+                toast(applicationContext, "Invalid credentials")
             }
         }
-    }
-
-    private fun toast(message: String) {
-        Toast.makeText(applicationContext, message, Toast.LENGTH_LONG).show()
     }
 
     private fun isUserValid(user: String): Boolean = user.length > 2
@@ -115,22 +105,22 @@ class LoginActivity : AppCompatActivity() {
 
         login_form.visibility = if (show) View.GONE else View.VISIBLE
         login_form.animate()
-            .setDuration(shortAnimTime)
-            .alpha((if (show) 0 else 1).toFloat())
-            .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    login_form.visibility = if (show) View.GONE else View.VISIBLE
-                }
-            })
+                .setDuration(shortAnimTime)
+                .alpha((if (show) 0 else 1).toFloat())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        login_form.visibility = if (show) View.GONE else View.VISIBLE
+                    }
+                })
 
         login_progress.visibility = if (show) View.VISIBLE else View.GONE
         login_progress.animate()
-            .setDuration(shortAnimTime)
-            .alpha((if (show) 1 else 0).toFloat())
-            .setListener(object : AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: Animator) {
-                    login_progress.visibility = if (show) View.VISIBLE else View.GONE
-                }
-            })
+                .setDuration(shortAnimTime)
+                .alpha((if (show) 1 else 0).toFloat())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        login_progress.visibility = if (show) View.VISIBLE else View.GONE
+                    }
+                })
     }
 }

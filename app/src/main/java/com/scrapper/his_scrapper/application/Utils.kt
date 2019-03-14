@@ -1,5 +1,7 @@
 package com.scrapper.his_scrapper.application
 
+import android.content.Context
+import android.widget.Toast
 import java.net.URI
 
 fun appendQueryParam(uri: String, queryParam: String): URI {
@@ -14,7 +16,12 @@ fun appendQueryParam(uri: String, queryParam: String): URI {
     }
 
     return URI(
-        oldUri.scheme, oldUri.authority,
-        oldUri.path, newQuery, oldUri.fragment
+            oldUri.scheme, oldUri.authority,
+            oldUri.path, newQuery, oldUri.fragment
     )
+}
+
+
+fun toast(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
 }

@@ -15,8 +15,11 @@ import javax.inject.Inject
 import kotlin.math.abs
 import android.app.*
 import android.app.NotificationManager
+import android.util.Log
 import com.scrapper.his_scrapper.application.DaggerMainComponent
 import com.scrapper.his_scrapper.application.MainModule
+import java.lang.Exception
+import kotlin.math.log
 
 
 private const val ACTION_CHECK = "com.scrapper.his_scrapper.action.CHECK"
@@ -39,10 +42,14 @@ class NotificationService : IntentService("NotificationService") {
     }
 
     override fun onHandleIntent(intent: Intent?) {
-        when (intent?.action) {
-            ACTION_CHECK -> {
-                handleActionCheck()
+        try {
+            when (intent?.action) {
+                ACTION_CHECK -> {
+                    handleActionCheck()
+                }
             }
+        } catch (e: Exception) {
+            Log.e("Fetching failed.", e.message)
         }
     }
 
@@ -57,6 +64,7 @@ class NotificationService : IntentService("NotificationService") {
             val grades = gradeRepo.getAll()
 
             val diff = abs(result.grades.size - result.grades.size)
+
             if (diff > 0) {
                 notifyUser(diff)
                 gradeRepo.updateOrCreate(grades)
