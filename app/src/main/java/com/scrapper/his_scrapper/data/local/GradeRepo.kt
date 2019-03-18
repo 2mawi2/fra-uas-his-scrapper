@@ -51,9 +51,9 @@ interface IGradeRepo {
 
 class GradeRepo @Inject constructor(private val gradeDao: GradeDao) : IGradeRepo {
     override suspend fun updateOrCreate(grades: List<Grade>) {
-        val existingByName = getAll().map { it.name to it }
+        val existingByName = getAll().map { it.name to it }.toMap()
         return grades.forEach {
-            val existingGrade = existingByName.firstOrNull { i -> i.first == it.name }?.second
+            val existingGrade = existingByName.getOrElse(it.name) { null }
             if (existingGrade == null) {
                 gradeDao.insert(it)
             } else {

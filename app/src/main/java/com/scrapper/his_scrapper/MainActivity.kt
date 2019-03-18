@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity() {
                     gradeRepo.updateOrCreate(result.grades)
                     updateGradeList()
                     sheduleNotifications()
+                    toast(applicationContext, "fetched grades...")
                 } else {
                     handleFetchFailure(result)
                 }
@@ -89,7 +90,7 @@ class MainActivity : AppCompatActivity() {
 
         alarmManager.setInexactRepeating(
             AlarmManager.RTC,
-            System.currentTimeMillis() + 3000, //start in 10 seconds
+            System.currentTimeMillis() + 3000, //start in 3 seconds
             AlarmManager.INTERVAL_HOUR,
             pendingIntent
         )
