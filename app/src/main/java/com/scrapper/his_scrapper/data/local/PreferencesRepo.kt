@@ -62,6 +62,10 @@ class PreferencesRepo @Inject constructor(
     }
 
     override fun isUserLoggedIn(): Boolean {
-        return getLoginDetails().getBoolean("is_logged_in", false)
+        val userName = getLoginDetails().getString("user_name", "")
+        val password = getLoginDetails().getString("user_password", "")
+        val isUserLoggedIn = getLoginDetails().getBoolean("is_logged_in", false)
+        val isKeyStoreValid = decryptor.isKeyStoreValid()
+        return isUserLoggedIn && !userName.isNullOrBlank() && !password.isNullOrBlank() && isKeyStoreValid!!
     }
 }

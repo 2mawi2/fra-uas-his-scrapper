@@ -12,6 +12,7 @@ import javax.crypto.spec.GCMParameterSpec
 
 interface IDecryptor {
     fun decryptData(encryptedData: String, encryptionIv: String): String
+    fun isKeyStoreValid(): Boolean?
 }
 
 class Decryptor : IDecryptor {
@@ -47,6 +48,8 @@ class Decryptor : IDecryptor {
             )
         )
     }
+
+    override fun isKeyStoreValid() = keyStore?.aliases()?.toList()?.isNotEmpty()
 
     private fun getSecretKey(alias: String): SecretKey {
         return (keyStore!!.getEntry(alias, null) as KeyStore.SecretKeyEntry).secretKey

@@ -20,6 +20,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.*
 import javax.inject.Inject
 
 
@@ -81,6 +82,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun sheduleNotifications() {
         val notificationIntent = Intent(applicationContext, NotificationPublisher::class.java)
+        notificationIntent.action = NotificationPublisher.ACTION_STARTUP_COMPLETED
 
         val broadCastId = 23556
         val pendingIntent = PendingIntent
@@ -88,10 +90,15 @@ class MainActivity : AppCompatActivity() {
 
         val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = System.currentTimeMillis()
+            add(Calendar.MINUTE, 1)
+        }
+
         alarmManager.setInexactRepeating(
-            AlarmManager.RTC,
-            System.currentTimeMillis() + 3000, //start in 3 seconds
-            AlarmManager.INTERVAL_HOUR,
+            AlarmManager.RTC_WAKEUP,
+            calendar.timeInMillis,
+            1000 * 60 * 60, // 60 minutes
             pendingIntent
         )
     }
