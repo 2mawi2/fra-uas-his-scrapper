@@ -2,6 +2,8 @@ package com.scrapper.his_scrapper.data.local
 
 import androidx.room.*
 import com.scrapper.his_scrapper.application.Grade
+import com.scrapper.his_scrapper.application.asyncIO
+import kotlinx.coroutines.*
 import java.util.*
 import javax.inject.Inject
 
@@ -27,22 +29,20 @@ abstract class ScrapperDatabase : RoomDatabase() {
 
 @Dao
 interface GradeDao {
-
     @Query("SELECT * FROM grades")
-    suspend fun getAll(): List<Grade>
-
+    fun getAll(): List<Grade>
 
     @Query("SELECT * FROM grades WHERE uid=:id")
     fun getById(id: Long): Grade
 
     @Insert
-    suspend fun insert(grade: Grade): Long
+    fun insert(grade: Grade): Long
 
     @Update
-    suspend fun update(grade: Grade)
+    fun update(grade: Grade)
 
     @Delete
-    suspend fun delete(grade: Grade)
+    fun delete(grade: Grade)
 }
 
 interface IGradeRepo {
@@ -53,13 +53,17 @@ interface IGradeRepo {
     suspend fun updateOrCreate(grades: List<Grade>)
 
     suspend fun getById(id: Long): Grade
+
+    suspend fun update(grade: Grade)
+
+    suspend fun delete(grade: Grade)
 }
 
-class GradeRepo @Inject constructor(private val gradeDao: GradeDao) : IGradeRepo {
 
-    override suspend fun updateOrCreate(grades: List<Grade>) {
+class GradeRepo @Inject constructor(private val gradeDao: GradeDao) : IGradeRepo {
+    override suspend fun updateOrCreate(grades: List<Grade>) = asyncIO {
         val existingByName = getAll().map { it.name to it }.toMap()
-        return grades.forEach {
+        grades.forEach {
             val existingGrade = existingByName.getOrElse(it.name) { null }
             if (existingGrade == null) {
                 gradeDao.insert(it)
@@ -69,10 +73,24 @@ class GradeRepo @Inject constructor(private val gradeDao: GradeDao) : IGradeRepo
         }
     }
 
-    override suspend fun getById(id: Long): Grade = gradeDao.getById(id)
+    override suspend fun update(grade: Grade) = asyncIO {
+        gradeDao.update(grade)
+    }
 
-    override suspend fun getAll(): List<Grade> = gradeDao.getAll()
+    override suspend fun getById(id: Long): Grade = asyncIO {
+        gradeDao.getById(id)
+    }
 
-    override suspend fun insert(word: Grade): Long = gradeDao.insert(word)
+    override suspend fun getAll(): List<Grade> = asyncIO {
+        gradeDao.getAll()
+    }
+
+    override suspend fun insert(word: Grade): Long = asyncIO {
+        gradeDao.insert(word)
+    }
+
+    override suspend fun delete(grade: Grade) = asyncIO {
+        gradeDao.delete(grade)
+    }
 }
 

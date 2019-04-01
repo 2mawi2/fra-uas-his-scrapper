@@ -15,30 +15,24 @@ import java.lang.Exception
 class GradleRepoTest {
     @Test
     fun androidRoomUpdateTest() {
-        GlobalScope.launch {
-            val db = getDbContext()
+        val db = getDbContext()
 
-            var result = GlobalScope.async {
-                val id = db.gradeDao().insert(
-                    Grade(
-                        grade = 1.0f,
-                        name = "some",
-                        passed = true,
-                        semester = "some"
-                    )
-                )
+        val id = db.gradeDao().insert(
+            Grade(
+                grade = 1.0f,
+                name = "some",
+                passed = true,
+                semester = "some"
+            )
+        )
 
-                val grade = db.gradeDao().getById(id)
-                grade.grade = 3.0f
-                db.gradeDao().update(grade)
+        val grade = db.gradeDao().getById(id)
+        grade.grade = 3.0f
+        db.gradeDao().update(grade)
 
 
-                return@async db.gradeDao().getById(id)
-            }
-
-            var awaitedResult = result.await()
-            awaitedResult.grade.shouldEqual(3.0f)
-        }
+        var result =  db.gradeDao().getById(id)
+        result.grade.shouldEqual(3.0f)
     }
 
     private fun getDbContext(): ScrapperDatabase {
