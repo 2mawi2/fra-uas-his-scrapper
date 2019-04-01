@@ -9,12 +9,12 @@ import java.util.*
 @Entity(tableName = "grades")
 data class Grade(
     @PrimaryKey(autoGenerate = true) var uid: Long = 0,
-    @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "semester") val semester: String,
-    @ColumnInfo(name = "is_passed") val passed: Boolean,
-    @ColumnInfo(name = "credits") val credits: Float? = null,
-    @ColumnInfo(name = "grade") val grade: Float? = null,
-    @ColumnInfo(name = "date") val date: Date? = null
+    @ColumnInfo(name = "name") var name: String,
+    @ColumnInfo(name = "semester") var semester: String,
+    @ColumnInfo(name = "is_passed") var passed: Boolean,
+    @ColumnInfo(name = "credits") var credits: Float? = null,
+    @ColumnInfo(name = "grade") var grade: Float? = null,
+    @ColumnInfo(name = "date") var date: Date? = null
 )
 
 enum class Reason {

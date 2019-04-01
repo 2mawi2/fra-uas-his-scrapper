@@ -31,8 +31,12 @@ interface GradeDao {
     @Query("SELECT * FROM grades")
     suspend fun getAll(): List<Grade>
 
+
+    @Query("SELECT * FROM grades WHERE uid=:id")
+    fun getById(id: Long): Grade
+
     @Insert
-    suspend fun insert(grade: Grade)
+    suspend fun insert(grade: Grade): Long
 
     @Update
     suspend fun update(grade: Grade)
@@ -44,12 +48,15 @@ interface GradeDao {
 interface IGradeRepo {
     suspend fun getAll(): List<Grade>
 
-    suspend fun insert(word: Grade)
+    suspend fun insert(word: Grade): Long
 
     suspend fun updateOrCreate(grades: List<Grade>)
+
+    suspend fun getById(id: Long): Grade
 }
 
 class GradeRepo @Inject constructor(private val gradeDao: GradeDao) : IGradeRepo {
+
     override suspend fun updateOrCreate(grades: List<Grade>) {
         val existingByName = getAll().map { it.name to it }.toMap()
         return grades.forEach {
@@ -62,8 +69,10 @@ class GradeRepo @Inject constructor(private val gradeDao: GradeDao) : IGradeRepo
         }
     }
 
+    override suspend fun getById(id: Long): Grade = gradeDao.getById(id)
+
     override suspend fun getAll(): List<Grade> = gradeDao.getAll()
 
-    override suspend fun insert(word: Grade) = gradeDao.insert(word)
+    override suspend fun insert(word: Grade): Long = gradeDao.insert(word)
 }
 
